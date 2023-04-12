@@ -1,8 +1,12 @@
 import { FormEvent, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import ToDoEntry from "@/components/ToDoEntries";
 
 export default function Home() {
   const [toDos, setTodos] = useState<
+    { id: string; name: FormDataEntryValue }[]
+  >([]);
+  const [deletedTodos, setDeletedTodos] = useState<
     { id: string; name: FormDataEntryValue }[]
   >([]);
 
@@ -19,17 +23,40 @@ export default function Home() {
     setTodos([...toDos, newToDo]);
     event.currentTarget.reset();
   }
-  console.log(toDos);
+
+  function handleDelete(id: string) {
+    const updatedToDos = toDos.filter((todo) => todo.id !== id);
+    setTodos(updatedToDos);
+    const newDeletedTodo: { id: string; name: FormDataEntryValue } | undefined =
+      toDos.find((todo) => todo.id === id);
+    newDeletedTodo && setDeletedTodos([...deletedTodos, newDeletedTodo]);
+  }
 
   return (
     <>
       <h1>ToDO</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="todo"></label>
-        <input type="text" name="todo" id="todo" />
+        <input type="text" name="todo" id="todo" autoComplete="off" />
         <button>add</button>
       </form>
-      <ul></ul>
+      <ul>
+        {toDos.map((todo) => {
+          return (
+            <ToDoEntry
+              key={todo.id}
+              todo={todo}
+              onDelete={handleDelete}
+            ></ToDoEntry>
+          );
+        })}
+      </ul>
+      <h2>recently deleted</h2>
+      <ul>
+        {deletedTodos.map((todo) => {
+          return <ToDoEntry key={todo.id} todo={todo}></ToDoEntry>;
+        })}
+      </ul>
     </>
   );
 }
